@@ -173,7 +173,9 @@ export default {
           `https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=USD&api-key=6bbdc8226f808a28b6ba2f998e961597a33138077fae225d3accd6096994fee8`
         );
         const data = await f.json();
-        // currentTicker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2); реактивность не работает почему-то
+        /* currentTicker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+         Не сработает, так как сначала мы добавляем currentTicker в массив tickers, а потом с задержкой выполняется функция.
+         Следовательно, currentTicker уже обернут proxy */
         this.tickers.find((t) => t.name === currentTicker.name).price =
           data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
 
@@ -203,5 +205,3 @@ export default {
   }
 };
 </script>
-
-<style src="./app.css"></style>
