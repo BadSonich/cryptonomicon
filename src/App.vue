@@ -189,6 +189,14 @@ export default {
     };
   },
   created() {
+    // Криптономикон-5
+    const tickersData = localStorage.getItem("cryptonomicon-list");
+    if (tickersData) {
+      this.tickers = JSON.parse(tickersData);
+      this.tickers.forEach((ticker) => {
+        this.subscribeToUpdates(ticker.name, false);
+      });
+    }
     fetch(
       "https://min-api.cryptocompare.com/data/all/coinlist?summary=true&api-key=6bbdc8226f808a28b6ba2f998e961597a33138077fae225d3accd6096994fee8"
     )
@@ -205,32 +213,43 @@ export default {
       });
   },
   methods: {
-    add() {
-      const currentTicker = { name: this.ticker, price: "-" };
-
+    subscribeToUpdates(tickerName, checkTickers = true) {
       setInterval(async () => {
-        let tickerInTickers = this.tickers.find(
-          (t) => t.name === currentTicker.name
-        );
-        if (typeof tickerInTickers !== "undefined") {
+        let tickerInTickers = this.tickers.find((t) => t.name === tickerName);
+        if (typeof tickerInTickers !== "undefined" || !checkTickers) {
           const f = await fetch(
-            `https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=USD&api-key=6bbdc8226f808a28b6ba2f998e961597a33138077fae225d3accd6096994fee8`
+            `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api-key=6bbdc8226f808a28b6ba2f998e961597a33138077fae225d3accd6096994fee8`
           );
           const data = await f.json();
           /* currentTicker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
            Не сработает, так как сначала мы добавляем currentTicker в массив tickers, а потом с задержкой выполняется функция.
            Следовательно, currentTicker уже обернут proxy */
-          tickerInTickers.price =
-            data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+          if (data.USD !== "undefined") {
+            tickerInTickers.price =
+              data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+          }
 
-          if (this.sel?.name === currentTicker.name) {
+          if (this.sel?.name === tickerName) {
             this.graph.push(data.USD);
           }
         }
       }, 5000);
+    },
+    add() {
+      if (this.ticker.length <= 0) {
+        return;
+      }
+
+      const currentTicker = { name: this.ticker, price: "-" };
 
       if (!this.isTickerInTickers()) {
         this.tickers.push(currentTicker);
+        // Криптономикон-5
+        localStorage.setItem(
+          "cryptonomicon-list",
+          JSON.stringify(this.tickers)
+        );
+        this.subscribeToUpdates(currentTicker.name);
 
         this.ticker = "";
       }
@@ -273,6 +292,8 @@ export default {
     },
     handleDelete(tickerToRemove) {
       this.tickers = this.tickers.filter((t) => t !== tickerToRemove);
+      // Криптономикон-5
+      localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
     },
     normalizeGraph() {
       const maxValue = Math.max(...this.graph);
