@@ -36,15 +36,13 @@
               <input
                 v-model="ticker"
                 @keydown.enter="add"
-                @input="
-                  isTickerInTickers();
-                  prepareAutocomplete();
-                "
+                @input="prepareAutocomplete"
                 type="text"
                 name="wallet"
                 id="wallet"
                 class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
                 placeholder="Например DOGE"
+                autocomplete="off"
               />
             </div>
             <div
@@ -257,10 +255,11 @@ export default {
       return false;
     },
     prepareAutocomplete() {
+      this.isTickerInTickers();
+      this.autocomplete = [];
       if (this.ticker.length <= 0) {
         return;
       }
-      this.autocomplete = [];
       this.coinList.forEach((coin) => {
         if (this.autocomplete.length < 4) {
           if (
