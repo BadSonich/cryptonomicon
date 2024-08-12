@@ -89,9 +89,30 @@
       </section>
       <template v-if="tickers.length > 0">
         <hr class="w-full border-t border-gray-600 my-4" />
+        <div>
+          <button
+            v-if="page > 1"
+            @click="page = page - 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Назад
+          </button>
+          <button
+            v-if="hasNextPage"
+            @click="page = page + 1"
+            class="my-4 mx-2 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Вперёд
+          </button>
+          <div>
+            Фильтр:
+            <input v-model="filter" />
+          </div>
+        </div>
+        <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
-            v-for="t in tickers"
+            v-for="t in filteredTickers()"
             v-bind:key="t.name"
             @click="selectTicker(t)"
             :class="{ 'border-4': sel === t }"
@@ -184,12 +205,26 @@ export default {
       tickers: [],
       isError: false,
       sel: null,
+      autocomplete: [],
       graph: [],
-      autocomplete: []
+      // Криптономикон-5
+      page: 1,
+      filter: "",
+      hasNextPage: true
     };
   },
   created() {
     // Криптономикон-5
+    const windowData = Object.fromEntries(
+      new URL(window.location).searchParams.entries()
+    );
+
+    if (windowData.filter) {
+      this.filter = windowData.filter;
+    }
+    if (windowData.page) {
+      this.page = windowData.page;
+    }
     const tickersData = localStorage.getItem("cryptonomicon-list");
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
@@ -197,6 +232,7 @@ export default {
         this.subscribeToUpdates(ticker.name, false);
       });
     }
+    // / Криптономикон-5
     fetch(
       "https://min-api.cryptocompare.com/data/all/coinlist?summary=true&api-key=6bbdc8226f808a28b6ba2f998e961597a33138077fae225d3accd6096994fee8"
     )
@@ -213,6 +249,7 @@ export default {
       });
   },
   methods: {
+    // Криптономикон-5
     subscribeToUpdates(tickerName, checkTickers = true) {
       setInterval(async () => {
         let tickerInTickers = this.tickers.find((t) => t.name === tickerName);
@@ -224,7 +261,7 @@ export default {
           /* currentTicker.price = data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
            Не сработает, так как сначала мы добавляем currentTicker в массив tickers, а потом с задержкой выполняется функция.
            Следовательно, currentTicker уже обернут proxy */
-          if (data.USD !== "undefined") {
+          if (typeof data.USD !== "undefined") {
             tickerInTickers.price =
               data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
           }
@@ -250,6 +287,8 @@ export default {
           JSON.stringify(this.tickers)
         );
         this.subscribeToUpdates(currentTicker.name);
+        this.filter = "";
+        // / Криптономикон-5
 
         this.ticker = "";
       }
@@ -290,6 +329,18 @@ export default {
         }
       });
     },
+    // Криптономикон-5
+    filteredTickers() {
+      const start = (this.page - 1) * 6;
+      const end = this.page * 6;
+      const filteredTickers = this.tickers.filter((ticker) =>
+        ticker.name.includes(this.filter)
+      );
+
+      console.log(filteredTickers.length, end);
+      this.hasNextPage = filteredTickers.length > end;
+      return filteredTickers.slice(start, end);
+    },
     handleDelete(tickerToRemove) {
       this.tickers = this.tickers.filter((t) => t !== tickerToRemove);
       // Криптономикон-5
@@ -301,6 +352,25 @@ export default {
 
       return this.graph.map(
         (price) => 5 + ((price - minValue) * 95) / (maxValue - minValue)
+      );
+    }
+  },
+  // Криптономикон-5
+  watch: {
+    filter() {
+      this.page = 1;
+
+      window.history.pushState(
+        null,
+        document.title,
+        `${window.location.pathname}?filter=${this.filter}&page=${this.page}`
+      );
+    },
+    page() {
+      window.history.pushState(
+        null,
+        document.title,
+        `${window.location.pathname}?filter=${this.filter}&page=${this.page}`
       );
     }
   }
