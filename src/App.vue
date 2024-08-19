@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
     <div
-      v-if="isLoading"
+      v-show="isLoading"
       class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center"
     >
       <svg
@@ -195,14 +195,15 @@
 </template>
 
 <script>
-import { subscribeToTicker } from "@/api";
+import { loadCoinList, subscribeToTicker } from "@/api";
+
+const coinList = await loadCoinList();
 
 export default {
   name: "App",
   data() {
     return {
       isLoading: true,
-      coinList: [],
       //
       ticker: "",
       filter: "",
@@ -247,20 +248,7 @@ export default {
       });
     }
 
-    fetch(
-      "https://min-api.cryptocompare.com/data/all/coinlist?summary=true&api-key=6bbdc8226f808a28b6ba2f998e961597a33138077fae225d3accd6096994fee8"
-    )
-      .then((response) =>
-        response.json().then((data) => ({
-          data: data.Data
-        }))
-      )
-      .then((res) => {
-        this.coinList = Object.values(res.data);
-        this.isLoading = !(
-          this.isLoading && Object.keys(this.coinList).length > 0
-        );
-      });
+    this.isLoading = false;
   },
   computed: {
     filteredTickers() {
@@ -359,7 +347,7 @@ export default {
       if (this.ticker.length <= 0) {
         return;
       }
-      this.coinList.forEach((coin) => {
+      coinList.forEach((coin) => {
         if (this.autocomplete.length < 4) {
           if (
             coin.Symbol.toLowerCase().includes(this.ticker.toLowerCase()) ||

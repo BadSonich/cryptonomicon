@@ -3,6 +3,15 @@ const API_KEY =
 
 const tickersHandlers = new Map();
 
+export const loadCoinList = async () => {
+  const response = await fetch(
+    `https://min-api.cryptocompare.com/data/all/coinlist?summary=true&api-key=${API_KEY}`
+  );
+  const data = await response.json();
+
+  return Object.values(data.Data);
+};
+
 //TODO: refactor to use UrlSearchParams
 export const loadTickers = () => {
   if (tickersHandlers.size === 0) {
