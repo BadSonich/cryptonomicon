@@ -36,7 +36,6 @@
               <input
                 v-model="ticker"
                 @keydown.enter="add"
-                @input="prepareAutocomplete"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -204,17 +203,17 @@ export default {
   data() {
     return {
       isLoading: true,
-      //
+
       ticker: "",
       filter: "",
-      //
+
       isError: false,
-      //
+
       tickers: [],
       selectedTicker: null,
-      //
+
       autocomplete: [],
-      //
+
       graph: [],
       page: 1
     };
@@ -247,7 +246,8 @@ export default {
         );
       });
     }
-
+  },
+  mounted() {
     this.isLoading = false;
   },
   computed: {
@@ -300,7 +300,7 @@ export default {
 
       const currentTicker = { name: this.ticker, price: "-" };
 
-      if (!this.isTickerInTickers()) {
+      if (!this.isError) {
         this.tickers = [...this.tickers, currentTicker];
         localStorage.setItem(
           "cryptonomicon-list",
@@ -326,23 +326,7 @@ export default {
           t.price = price;
         });
     },
-    isTickerInTickers() {
-      if (this.ticker.length > 0) {
-        if (
-          typeof this.tickers.find(
-            (t) => t.name.toLowerCase() === this.ticker.toLowerCase()
-          ) === "undefined"
-        ) {
-          this.isError = false;
-          return false;
-        }
-        this.isError = true;
-        return true;
-      }
-      return false;
-    },
     prepareAutocomplete() {
-      this.isTickerInTickers();
       this.autocomplete = [];
       if (this.ticker.length <= 0) {
         return;
@@ -366,6 +350,19 @@ export default {
     }
   },
   watch: {
+    ticker() {
+      if (this.ticker.length > 0) {
+        let foundTicker = this.tickers.find(
+          (t) => t.name.toLowerCase() === this.ticker.toLowerCase()
+        );
+
+        this.isError = !(typeof foundTicker === "undefined");
+      } else {
+        this.isError = false;
+      }
+
+      this.prepareAutocomplete();
+    },
     tickers() {
       localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
     },
