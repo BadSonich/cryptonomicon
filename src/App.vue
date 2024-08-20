@@ -194,7 +194,7 @@
 </template>
 
 <script>
-import { loadCoinList, subscribeToTicker } from "@/api";
+import { loadCoinList, subscribeToTicker, unsubscribeFromTicker } from "@/api";
 
 const coinList = await loadCoinList();
 
@@ -309,8 +309,8 @@ export default {
 
         this.filter = "";
 
-        subscribeToTicker(this.ticker, (newPrice) =>
-          this.updateTicker(this.ticker, newPrice)
+        subscribeToTicker(currentTicker.name, (newPrice) =>
+          this.updateTicker(currentTicker.name, newPrice)
         );
 
         this.ticker = "";
@@ -344,9 +344,12 @@ export default {
     },
     handleDelete(tickerToRemove) {
       this.tickers = this.tickers.filter((t) => t !== tickerToRemove);
+
       if (this.selectedTicker === tickerToRemove) {
         this.selectedTicker = null;
       }
+
+      unsubscribeFromTicker(tickerToRemove.name);
     }
   },
   watch: {
