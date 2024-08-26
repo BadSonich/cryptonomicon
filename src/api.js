@@ -9,6 +9,11 @@ const tickersHandlers = new Map();
 
 const AGGREGATE_INDEX = "5";
 
+function updatePriceInTickerHandlers(currency, price) {
+  const handlers = tickersHandlers.get(currency) || [];
+  handlers.forEach((fn) => fn(parseFloat(price)));
+}
+
 socket.onmessage = (event) => {
   const {
     TYPE: type,
@@ -20,9 +25,21 @@ socket.onmessage = (event) => {
     return;
   }
 
-  const handlers = tickersHandlers.get(currency) || [];
-  handlers.forEach((fn) => fn(newPrice));
+  localStorage.setItem(currency, newPrice.toString());
+  updatePriceInTickerHandlers(currency, newPrice);
 };
+
+window.addEventListener("storage", function (event) {
+  let tickerName = event.key;
+
+  if (tickerName === "cryptonomicon-list") {
+    return;
+  }
+
+  let priceFromStorage = localStorage.getItem(tickerName);
+
+  updatePriceInTickerHandlers(tickerName, priceFromStorage);
+});
 
 export const loadCoinList = async () => {
   const response = await fetch(
@@ -74,6 +91,7 @@ export const subscribeToTicker = (ticker, callback) => {
 export const unsubscribeFromTicker = (ticker) => {
   tickersHandlers.delete(ticker);
   unSubscribeFromTickerOnWs(ticker);
+  localStorage.removeItem(ticker);
 };
 
 window.tickersHandlers = tickersHandlers;
