@@ -6,7 +6,7 @@ const socket = new WebSocket(
 );
 
 const tickersHandlers = new Map();
-
+window.tickers = tickersHandlers;
 const AGGREGATE_INDEX = "5";
 
 function updatePriceInTickerHandlers(currency, price) {
@@ -30,15 +30,21 @@ socket.onmessage = (event) => {
 };
 
 window.addEventListener("storage", function (event) {
-  let tickerName = event.key;
+  let storageKey = event.key,
+    storageData = localStorage.getItem(storageKey);
 
-  if (tickerName === "cryptonomicon-list") {
+  if (storageKey === "cryptonomicon-list") {
+    let tickersList = JSON.parse(storageData);
+    tickersList.forEach((ticker) => {
+      if (!tickersHandlers.get(ticker.name)) {
+        subscribeToTickerOnWs(ticker.name);
+      }
+    });
+
     return;
   }
 
-  let priceFromStorage = localStorage.getItem(tickerName);
-
-  updatePriceInTickerHandlers(tickerName, priceFromStorage);
+  updatePriceInTickerHandlers(storageKey, storageData);
 });
 
 export const loadCoinList = async () => {
