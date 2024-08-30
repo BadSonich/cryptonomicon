@@ -6,7 +6,7 @@ const socket = new WebSocket(
 );
 
 const tickersHandlers = new Map();
-window.tickers = tickersHandlers;
+
 const AGGREGATE_INDEX = "5";
 
 function updatePriceInTickerHandlers(currency, price) {

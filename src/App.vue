@@ -196,12 +196,11 @@
 <script>
 import { loadCoinList, subscribeToTicker, unsubscribeFromTicker } from "@/api";
 
-const coinList = await loadCoinList();
-
 export default {
   name: "App",
   data() {
     return {
+      coinList: [],
       isLoading: true,
 
       ticker: "",
@@ -246,9 +245,8 @@ export default {
         );
       });
     }
-  },
-  mounted() {
-    this.isLoading = false;
+
+    this.setCoinList();
   },
   computed: {
     filteredTickers() {
@@ -286,6 +284,12 @@ export default {
     }
   },
   methods: {
+    async setCoinList() {
+      this.coinList = await loadCoinList();
+      if (this.coinList.length > 0) {
+        this.isLoading = false;
+      }
+    },
     formatPrice(price) {
       if (price === "-") {
         return price;
@@ -335,7 +339,7 @@ export default {
       if (this.ticker.length <= 0) {
         return;
       }
-      coinList.forEach((coin) => {
+      this.coinList.forEach((coin) => {
         if (this.autocomplete.length < 4) {
           if (
             coin.Symbol.toLowerCase().includes(this.ticker.toLowerCase()) ||
