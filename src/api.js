@@ -97,7 +97,6 @@ export const subscribeToTicker = (ticker, callback) => {
 export const unsubscribeFromTicker = (ticker) => {
   tickersHandlers.delete(ticker);
   unSubscribeFromTickerOnWs(ticker);
-  localStorage.removeItem(ticker);
 };
 
 window.tickersHandlers = tickersHandlers;
