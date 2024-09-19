@@ -200,7 +200,7 @@ export default {
   name: "App",
   data() {
     return {
-      coinList: [],
+      coinList: [], // Самостоятельная работа: подгрузка списка монет
       isLoading: true,
 
       ticker: "",
@@ -246,7 +246,7 @@ export default {
       });
     }
 
-    this.setCoinList();
+    this.setCoinList(); // Самостоятельная работа: подгрузка списка монет
   },
   computed: {
     filteredTickers() {
@@ -284,12 +284,14 @@ export default {
     }
   },
   methods: {
+    // Самостоятельная работа: подгрузка списка монет
     async setCoinList() {
       this.coinList = await loadCoinList();
       if (this.coinList.length > 0) {
         this.isLoading = false;
       }
     },
+    // / Самостоятельная работа: подгрузка списка монет
     formatPrice(price) {
       if (price === "-") {
         return price;

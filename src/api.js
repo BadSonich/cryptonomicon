@@ -25,10 +25,11 @@ socket.onmessage = (event) => {
     return;
   }
 
-  localStorage.setItem(currency, newPrice.toString());
+  localStorage.setItem(currency, newPrice.toString()); // Самостоятельная работа: распределение данных на две и ольше вкладки приложения
   updatePriceInTickerHandlers(currency, newPrice);
 };
 
+// Самостоятельная работа: распределение данных на две и ольше вкладки приложения
 window.addEventListener("storage", function (event) {
   let storageKey = event.key,
     storageData = localStorage.getItem(storageKey);
@@ -46,7 +47,9 @@ window.addEventListener("storage", function (event) {
 
   updatePriceInTickerHandlers(storageKey, storageData);
 });
+// / Самостоятельная работа: распределение данных на две и ольше вкладки приложения
 
+// Самостоятельная работа: подгрузка списка монет
 export const loadCoinList = async () => {
   const response = await fetch(
     `https://min-api.cryptocompare.com/data/all/coinlist?summary=true&api-key=${API_KEY}`
@@ -55,6 +58,7 @@ export const loadCoinList = async () => {
 
   return Object.values(data.Data);
 };
+// / Самостоятельная работа: подгрузка списка монет
 
 function sendToWs(message) {
   const stringifyMessage = JSON.stringify(message);
